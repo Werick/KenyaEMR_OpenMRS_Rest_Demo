@@ -1,0 +1,571 @@
+---
+title: "Rest_API_Demo"
+author: "Wafula Erick"
+date: "8/27/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r rest_api_demo}
+library(httr)
+library(jsonlite)
+library(readr)
+library(dplyr)
+library("stringr")
+
+# Run this query on kenyaemr to resolve concept uuid issues
+# update concept set uuid= concat(concept_id,repeat('A',36-length(concept_id)))
+# where uuid not like '%AAA%'
+
+# Get required files
+# 1. Login credentials
+# 2. Concept Mapping
+# 3. List of patients mapped in openmrs and KenyaEMR using person uuid
+
+df_userdetails <- read.csv("../data/credentials.csv")
+concept_mapping_df <- read.csv(file = "../data/openmrs_kenyaemr_green_card_concep_mapping.csv",
+                               stringsAsFactors = FALSE)
+
+
+username <- df_userdetails$username
+password <- df_userdetails$password
+# glimpse(df_userdetails)
+
+openmrs_base_url <- "http://192.168.1.200:8080/openmrs/ws/rest/v1/"
+kenyaemr_base_url <- "http://192.168.1.201:8080/openmrs/ws/rest/v1/"
+endpoint <- "patient"
+test_end_point <- "session"
+
+uuid <- "ff5937e1-ab5a-102d-be97-85aedb3d9f67"
+query_string <- "test"
+
+#Create complete url to test connection on the main servers 
+test_call_openmrs <- paste(openmrs_base_url,test_end_point,sep = "")
+test_call_kenyaemr <- paste(kenyaemr_base_url,test_end_point,sep = "")
+
+#test connection 2
+call1 <- paste(openmrs_base_url,endpoint,"?q=",query_string,sep = "")
+
+#Encode username and password using base64 as required by OpenMRS
+userpass <-base64_enc(paste(username,":",password, sep = ""))
+
+
+#Function run a get request and return a json object from the server
+getRequest <- function(url) {
+  #Get data from the server
+  feedBack_from_Server <- GET(url, add_headers(Authorization=paste("Basic",userpass)))
+  
+  #Deserialize the content
+  text_content <- content(feedBack_from_Server,"text")
+  
+  #Convert to json
+  json_object <- fromJSON(text_content, flatten = TRUE)
+  return(json_object)
+}
+
+getAllPatient_encounters <- function(base_url, patientUuid, startIndex) {
+  endpoint <- "encounter"
+  print(startIndex)
+  url <-""
+  if (startIndex==0) {
+    url <- paste(base_url,endpoint,"?patient=",patientUuid,"&v=custom:(uuid,display)", sep = "")
+  } else {
+     url <- paste(base_url,endpoint,"?patient=",patientUuid,"&v=custom:(uuid,display)", "&startIndex=", startIndex, sep = "")
+  }
+ 
+  feedBack_from_Server <- GET(url, add_headers(Authorization=paste("Basic",userpass)))
+  
+  #Deserialize the content
+  text_content <- content(feedBack_from_Server,"text")
+  
+  #Convert to json
+  json_object <- fromJSON(text_content, flatten = TRUE)
+  return(json_object)
+}
+
+getPatient_visits <- function(base_url, patientUuid, startIndex) {
+  endpoint <- "visit"
+  url <- ""
+  
+  if (startIndex==0) {
+    url <- paste(base_url, endpoint, "?patient=",patientUuid,"&v=custom:(uuid,display)",sep = "")
+  } else {
+    url <- paste(openmrs_base_url,endpoint,"?patient=",patientUuid,"&v=custom:(uuid,display)", "&startIndex=",startIndex ,sep = "")
+  }
+  
+  feedBack_from_Server <- GET(url, add_headers(Authorization=paste("Basic",userpass)))
+  #Deserialize the content
+  text_content <- content(feedBack_from_Server,"text")
+  
+  #Convert to json
+  json_object <- fromJSON(text_content, flatten = TRUE)
+  return(json_object)
+}
+
+getPatient_obs <- function(base_url, patientUuid, startIndex) {
+  endpoint <- "obs"
+  url <- ""
+  
+  if (startIndex==0) {
+    url <- paste(base_url, endpoint, "?patient=", patientUuid, "&v=custom:(uuid,display)", sep = "")
+  } else {
+    url <- paste(base_url, endpoint, "?patient=", patientUuid, "&v=custom:(uuid,display)", "&startIndex=", startIndex, sep = "")
+  }
+  
+  feedBack_from_Server <- GET(url, add_headers(Authorization=paste("Basic",userpass)))
+  #Deserialize the content
+  text_content <- content(feedBack_from_Server,"text")
+  
+  #Convert to json
+  json_object <- fromJSON(text_content, flatten = TRUE)
+  return(json_object)
+}
+
+session_openmrs <- getRequest(test_call_openmrs)
+session_ke <- getRequest(test_call_kenyaemr)
+
+#Get Patient using the get function
+patient <- getRequest(call1)
+
+
+#Test 2
+endpoint <- "concept"
+uuid <- "ff5937e1-ab5a-102d-be97-85aedb3d9f67"
+query_string <- "test"
+call1 <- paste(openmrs_base_url,endpoint,"?limit=100",sep = "")
+
+#Get concepts using the get function
+concept <- getRequest(call1)
+
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+# Json Object for a visit
+POST /visit
+{
+    "patient": "5dee096f-01d9-4f11-a0df-4b6464dc885a",
+    "visitType": "3371a4d4-f66f-4454-a86d-92c7b3da990c",
+    "startDatetime": "2016-10-08T04:09:25.000Z",
+    "location": "fd27f3b3-b033-4203-8c4c-84bbd5410bf0",
+    "indication": null,
+    "encounters": [
+    "target_encounter_uuid"
+    ],
+    "attributes": []
+}
+
+
+POST /Encounter
+{
+  "encounterDatetime": "2019-10-16 12:08:43",
+  "patient": "070f0120-0283-4858-885d-a20d967729cf",
+  "encounterType": "e22e39fd-7db2-45e7-80f1-60fa0d5a4378",
+  "location": "aff27d58-a15c-49a6-9beb-d30dcfc0c66e",
+  "encounterProviders": [
+    {
+      "provider": "bb1a7781-7896-40be-aaca-7d1b41d843a6",
+      "encounterRole": "240b26f9-dd88-4172-823d-4a8bfeb7841f"
+    }
+  ],
+  "obs":[],
+  "orders":[], #optional
+  "form": "formUuid",
+  "visit": "visitUuid"
+}
+```
+
+Please find a better-formatted JSON body for an Encounter including a visit.
+
+{
+“encounterDatetime”: “currentdatetime”, 
+“patient”: “patient_uuid”, 
+“encounterType”: “encounterType_uuid”, 
+“location”: “location_uus”, 
+“visit”: { “patient”: “patient_uuid”, “visitType”: “visittype_uuid”, “startDatetime”: “currentdatetime” }, 
+“encounterProviders”: [ { “provider”: “provider_uuid”, “encounterRole”: “240b26f9-dd88-4172-823d-4a8bfeb7841f” } ], 
+“obs”: [ {“concept”: “concept_uuid”, “value”: 30 }, {“concept”: “concept_uuid”, “value”: 30 }, { “concept”: “concent_uuid” “value”: “coded_concept_uuid” } ] }
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+```{r, echo = FALSE}
+# This is a uuid of the same patient on KenyaEMR and opeNMRS
+
+#uuid on KenyaEMR
+test_patient_uuid_ke <- "be0af8a0-1ef6-487a-b843-aefe48578758"
+
+#uuid on OpenMRS
+test_patient_uuid_op <- "5dee096f-01d9-4f11-a0df-4b6464dc885a"
+
+#function to get patient encounters and return a df(uuid,datetvisit,encountertype)
+process_encounterList <- function(base_url, patient_uuid) {
+  more_results <- 1
+  startIndex <- 0
+  encounter_df <- data.frame()
+  
+  while (more_results==1) {
+    encounter_list <- getPatient_encounters(base_url, patient_uuid, startIndex)
+    # print(encounter_list)
+       # add the results to a data frame 
+     if (nrow(encounter_df) == 0) {
+       encounter_df <- encounter_list$results
+     } else {
+       encounter_df <- rbind(encounter_df,encounter_list$results)
+     }
+    
+    # Check to see if we have an extra page of results
+    if ("links" %in% names(encounter_list)) {
+      
+      # if links is available, loop throu the list to see if there is a next page of results
+      nextpg_in <- encounter_list$links %>%
+        filter(rel=="next")
+      if(nrow(nextpg_in)>0) {
+        print("Fetching more rows")
+        more_results <- 1
+        startIndex <- startIndex + 50
+      } else {
+        more_results <- 0
+      }
+      
+    } else {
+      # exit loop no extra results to be fetched 
+      more_results <- 0
+    }
+  }
+ 
+  return(encounter_df) 
+}
+
+setencounter_date <- function(df) {
+  enc_date <- str_sub(df['display'],start = -10, end = -1)
+  return(as.character(enc_date))
+  
+}
+
+setencounter_type <- function(df) {
+  enc_type <- str_sub(df['display'],start = 1,end = nchar(df['display'])-11)
+  return(enc_type)
+}
+
+setobs_question <- function(df) {
+  #print(df)
+  #str_split returns a list of items- use unlist to get the individual items
+  obs_question <- str_split(df['display'], ":")
+  #print(unlist(obs_question))
+  return(unlist(obs_question)[1])
+  
+}
+
+setobs_answer <- function(df) {
+  obs_answer <- strsplit(df['display'],":")
+  return(as.character(trimws(unlist(obs_answer)[2])))
+ 
+}
+
+getConceptbyUuid <- function(base_url, concept_uuid) {
+   endpoint <- "concept/"
+    format_output <- "?v=custom:(uuid,display,name:(uuid),datatype:(uuid,display),conceptClass:(uuid,display))"
+  
+  url <-paste(base_url, endpoint,  concept_uuid, format_output,  sep = "")
+  
+  
+  feedBack_from_Server <- GET(url, add_headers(Authorization=paste("Basic",userpass)))
+  #Deserialize the content
+  text_content <- content(feedBack_from_Server,"text")
+  
+  #Convert to json
+  json_object <- fromJSON(text_content, flatten = TRUE)
+  
+  return(json_object)
+ 
+}
+
+# function returns an encounter object with all the properties of the encounter
+getEncounterbyUuid <- function(base_url, enc_uuid) {
+  endpoint <- "encounter/"
+  
+  form_output <- "?v=custom:(uuid,display,encounterDatetime,patient:(uuid),location:(uuid),form:(uuid),encounterType:(uuid),obs:(uuid,display),encounterProviders:(uuid))"
+  
+  url <-paste(base_url, endpoint,  enc_uuid, form_output,  sep = "")
+  
+  
+  feedBack_from_Server <- GET(url, add_headers(Authorization=paste("Basic",userpass)))
+  #Deserialize the content
+  text_content <- content(feedBack_from_Server,"text")
+  
+  #Convert to json
+  json_object <- fromJSON(text_content, flatten = TRUE)
+  
+  return(json_object)
+  
+}
+
+# function returns an obs object with all the properties of the obs
+getobsbyUuid <- function(base_url, obs_uuid) {
+  endpoint <- "obs/"
+  
+  url <- paste(base_url, endpoint,  obs_uuid,  sep = "")
+  
+  feedBack_from_Server <- GET(url, add_headers(Authorization=paste("Basic",userpass)))
+  
+  #Deserialize the content
+  text_content <- content(feedBack_from_Server,"text")
+  
+  #Convert to json
+  json_object <- fromJSON(text_content, flatten = TRUE)
+  
+  return(json_object)
+  
+}
+
+# function to build an encounter object with appropriate properties from the json object
+processObs <- function(jsonObject) {
+  jsonObject$obs$openmrs_question <- apply(jsonObject$obs,1,setobs_question)
+  jsonObject$obs$openmrs_answer <- apply(jsonObject$obs,1,setobs_answer)
+  
+  return(jsonObject)
+}
+
+
+setKenyaEmrQuestionUuid <- function(df) {
+  
+  kequestionuuid <- NA
+  emr_mapping_df <- concept_mapping_df %>%
+    filter(trimws(question_openmrs)  == trimws(df['openmrs_question']))
+  if (nrow(emr_mapping_df)>0) {
+    kequestionuuid <- paste(as.character(emr_mapping_df[nrow(emr_mapping_df),'kenyaemr_uuid']), strrep("A",36-nchar(as.character(emr_mapping_df[nrow(emr_mapping_df),'kenyaemr_uuid']))), sep = "")
+  }
+  return(kequestionuuid)
+}
+
+setKenyaEmrAnswerValue <- function(df) {
+  
+  answerValue <- NA
+  emr_mapping_df <- concept_mapping_df %>%
+    filter(toupper(trimws(question_openmrs))  == toupper(trimws(df['openmrs_question'])))
+  if (nrow(emr_mapping_df)>0) {
+    
+    # print(emr_mapping_df)
+    
+    if (emr_mapping_df[nrow(emr_mapping_df),'question_type'] == "Numeric") {
+      #print(emr_mapping_df)
+      answerValue <- as.numeric(df['openmrs_answer'])
+      #print(answerValue)
+      
+    } else if (emr_mapping_df[nrow(emr_mapping_df),'question_type'] == "Date") {
+      
+      answerValue <- as.character(df['openmrs_answer'])
+      
+    }  else if (emr_mapping_df[nrow(emr_mapping_df),'question_type'] == "Boolean") {
+      
+      if (toupper(trimws(df['openmrs_answer'])) == "YES") {
+        answerValue <- 1
+      } else {
+        answerValue <- 0
+      }
+      
+      print(paste(answerValue,df['openmrs_answer']))
+      
+      
+    } else if (emr_mapping_df[nrow(emr_mapping_df),'question_type'] == "coded") {
+      
+      # we create key value pair in order to get the selected response
+      kenyaemr_mapped_list <- emr_mapping_df[nrow(emr_mapping_df),'ke_answer_uuid_list']
+      openmrs_mapped_list <- emr_mapping_df[nrow(emr_mapping_df),'openmrs_answer_key_list']
+      
+      kenyaemr_mapped_list_split <- unlist(str_split(kenyaemr_mapped_list, ",")) 
+      openmrs_mapped_list_split <- unlist(str_split(openmrs_mapped_list, ","))
+      
+      # the assumption is that the two lists are of the same length
+     
+      #initialize the List
+      answer_key_value_list <- list ()
+      
+      for(i in 1:length(openmrs_mapped_list_split)) {
+        
+        key <- toupper(trimws(openmrs_mapped_list_split[i])) 
+        value <- trimws(kenyaemr_mapped_list_split[i])
+        answer_key_value_list[[key]] <- value
+        
+      }
+      
+      answeruuid <- as.character(answer_key_value_list[toupper(df['openmrs_answer'])])
+      answerValue <- paste(as.character(answeruuid), strrep("A",36-nchar(as.character(answeruuid))), sep = "")
+      
+      if (answeruuid == "NULL") {
+        print(df['openmrs_question'])
+        print(answerValue)
+        print(answer_key_value_list)
+      }
+      
+      
+    } else {
+      print(paste("****not Spectified****",df['openmrs_question']))
+    }
+    
+    
+  }
+  return(answerValue)
+}
+
+generate_encounter_payload <- function(jsonObject, encounter_ke) {
+
+obs <- jsonObject$obs %>%
+  select(kenyaemrquestionuuid,kenyaemranswer) %>%
+  rename(concept=kenyaemrquestionuuid,value=kenyaemranswer)
+
+
+encounterProviders <- encounter_ke$encounterProviders %>%
+  rename(provider=uuid)
+
+encounterProviders$encounterRole<- "a0b03050-c99b-11e0-9572-0800200c9a66"
+encounterProviders$provider <- "ae01b8ff-a4cc-4012-bcf7-72359e852e14"
+
+
+
+#visit <- list("visitType" = "3371a4d4-f66f-4454-a86d-92c7b3da990c")
+  
+  patient_uuid <- "be0af8a0-1ef6-487a-b843-aefe48578758" # This should come from the spreadsheet or passed to the programm
+  payload <- list("encounterDatetime" = jsonObject$encounterDatetime,
+                  "patient" = patient_uuid,
+                  "encounterType" = "a0034eee-1940-4e35-847f-97537a35d05e",
+                  "location" = encounter_ke$location$uuid, 
+                  "form" = "23b4ebbd-29ad-455e-be0e-04aa6bc30798",
+                  "encounterProviders" = encounterProviders,
+                  "obs" = obs)
+  
+  return(payload)
+}
+
+post_encounter <- function(payload) {
+  post_enpoint <- "encounter"
+  url <- paste(kenyaemr_base_url, post_enpoint,  sep = "")
+  post_payload_json <- toJSON(post_payload)
+  
+  # remove the following xters from the "[ and "] so that the payload is correctly formated
+  # in order for openmrs to accept
+  post_payload_json_formated <- gsub('\\[\\"|\\"\\]','\\"',post_payload_json)
+
+  feedBack_from_Server <- POST(url, add_headers(Authorization=paste("Basic",userpass)),verbose(), content_type_json(),body = post_payload_json_formated)
+
+  ## show feedback from the server - uncomment to troubleshoot
+  # http_status(feedBack_from_Server)
+  #content(feedBack_from_Server)
+  return(feedBack_from_Server$status_code)
+}
+
+
+```
+
+testing some r function here
+```{r}
+# testing ground for some functions
+#get patient from openmrs
+patientUuid <- "5dee096f-01d9-4f11-a0df-4b6464dc885a"
+base_url <- openmrs_base_url
+
+
+test_object<-process_encounterList(base_url,patientUuid)
+test_object$enc_date <- apply(test_object,1,setencounter_date)
+test_object$enc_type <- apply(test_object,1,setencounter_type)
+
+#get patient from kenyaemr
+patientUuid <- "be0af8a0-1ef6-487a-b843-aefe48578758"
+base_url <- kenyaemr_base_url
+
+
+test_object_ke<-process_encounterList(base_url,patientUuid)
+test_object_ke$enc_date <- apply(test_object_ke,1,setencounter_date)
+test_object_ke$enc_type <- apply(test_object_ke,1,setencounter_type)
+
+# get encounters in OpenMRS that are not in KenyaEMR using encounter date
+#convert to date format
+test_object_ke$enc_date_0 <- as.Date(as.character(test_object_ke$enc_date), format="%m/%d/%Y")
+test_object$enc_date_0 <- as.Date(as.character(test_object$enc_date), format="%d/%m/%Y")
+
+head(test_object_ke)
+df_enc_list <- test_object %>%
+  filter(!(enc_date_0 %in% test_object_ke$enc_date_0))
+
+head(df_enc_list)
+
+test_object_ke %>%
+  filter(trimws(enc_type) =='HIV Consultation')
+
+test_encounter <- getEncounterbyUuid(openmrs_base_url,"2bea5b09-1cf6-4a48-8677-3c9fa2a834a9")
+test_encounter$obs$openmrs_question <- apply(test_encounter$obs,1,setobs_question)
+test_encounter$obs$openmrs_answer <- apply(test_encounter$obs,1,setobs_answer)
+
+test_encounter$obs <- test_encounter$obs %>%
+  arrange(openmrs_question)
+
+test_encounter$obs
+
+#Get HIv Consultatio from KenyaERMR
+head(test_object_ke)
+test_encounter_ke <- getEncounterbyUuid(kenyaemr_base_url,"8ed92cbc-72bb-4ade-90bd-8f46d61e525a")
+test_encounter_ke$obs$ke_emr_question <- apply(test_encounter_ke$obs,1,setobs_question)
+test_encounter_ke$obs$ke_emr_answer <- apply(test_encounter_ke$obs,1,setobs_answer)
+
+test_encounter_ke$obs <- test_encounter_ke$obs %>%
+  arrange(ke_emr_question)
+
+test_encounter_ke$obs
+#write.csv(test_encounter_ke$obs, file = "../data/ke_green_card.csv")
+#write.csv(test_encounter$obs, file = "../data/op_green_card.csv")
+
+# Create some characters using repeating string/letter
+#this a way of auto-generating uuids for kenyaemr
+#x<- paste("1658",strrep("A",36-nchar("1658")))
+
+# Important ke encounter properties
+ke_emr_encounter_details <- list("form" = "23b4ebbd-29ad-455e-be0e-04aa6bc30798",
+                                 "encounterType" = "a0034eee-1940-4e35-847f-97537a35d05e",
+                                 "location" = "fd27f3b3-b033-4203-8c4c-84bbd5410bf0"
+                                 )
+
+
+
+
+test_encounter$obs$kenyaemrquestionuuid <- apply(test_encounter$obs,1,setKenyaEmrQuestionUuid)
+test_encounter$obs$kenyaemranswer <- apply(test_encounter$obs,1,setKenyaEmrAnswerValue)
+# test_encounter$obs
+
+test_encounter$obs <- test_encounter$obs %>%
+  filter(!(is.na(kenyaemranswer) | is.na(kenyaemrquestionuuid) | kenyaemranswer == "NULLAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA") )
+
+test_encounter$obs
+post_payload <- generate_encounter_payload(test_encounter,test_encounter_ke)
+
+#Check obs concept ids
+# for(i in 1:nrow(post_payload$obs)) {
+#   r<-getConceptbyUuid(kenyaemr_base_url,post_payload$obs[i,'concept'])
+#   print(paste(i,post_payload$obs[i,'concept'],r$uuid, r$datatype$display))
+# }
+
+#post_payload$obs
+
+# This is great deal and the epitome of this day 09/09/2020
+# I'll be trying http post
+
+
+
+# remove the following xters from the "[ and "] so that the payload is correctly formated
+# in order for openmrs to accept
+# post_payload_json_formated <- gsub('\\[\\"|\\"\\]','\\"',post_payload_json)
+  
+
+```
+
