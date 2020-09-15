@@ -1,0 +1,31 @@
+question_openmrs,question_ke,question_type,openmrs_uuid,kenyaemr_uuid,openmrs_answer,ke_answer_uuid_list,ke_answer_key_list,openmrs_answer_key_list
+ART ADHERENCE,ANTIRETROVIRAL ADHERENCE IN PAST MONTH,coded,3c738c8f-48e5-4e82-8c2b-61875942ce70,1658,GOOD,"159405, 159406, 159407","Good,Fair,Poor","Good,Fair,Poor"
+PATIENT GIVEN CONDOMS,Condoms given during the visit,coded,c9c71f21-1f89-42ed-9c07-eb8dafbe4550,159777,Yes,"1065, 1066, 1067, 1175","Yes,No,Unkown,Not_applicable","Yes,No,Unkown,NOT APPLICABLE"
+CTX ADHERENCE,Cotrimoxazole adherence,coded,74c691ba-6047-4de5-90ac-7d36b23af112,161652,GOOD,"159405, 159406, 159407","Good,Fair,Poor","Good,Fair,Poor"
+REASON CTX PRESCRIBED,Cotrimoxazole dispensed,coded,a0e50c86-ab57-102d-be97-85aedb3d9f67,162229,PROPHYLAXIS,"1065, 1066, 1175","Yes,No,Not_Applicable","PROPHYLAXIS,No,Not Applicable"
+CURRENTLY PREGNANT,Pregnancy status,coded,a0e85cbe-ab57-102d-be97-85aedb3d9f67,5272,No,"1065, 1066","Yes, No","Yes, No"
+MOST ADVANCED WHO HIV STAGE,CURRENT WHO HIV STAGE,coded,,5356,,"1220, 1221,1222, 1223, 1204, 1205, 1206, 1207",,"WHO STAGE 1,WHO STAGE 2,WHO STAGE 3,WHO STAGE 4"
+FAMILY PLANNING Status,Family planning status,coded,,160653,,"965, 160652, 1360","On Family Planning,Not using Family Planning,Wants Family Planning","Yes,No,WFP"
+METHOD OF FAMILY PLANNING,Method of family planning,coded,a0d900fa-ab57-102d-be97-85aedb3d9f67,374,,"190, 1489, 1472, 5277, 5278, 136163,5275, 1359, 5279, 780, 160570","Condoms, Vasectomy, Tubal Ligation, Fertility Awareness, Diaphram/Cervical Cap, Lactational Amenorhea Method, Intrauterine Device, Implant,Injectible, Oral Contraceptives Pills, Emergency contraceptive pills","CONDOMS, VASECTOMY(V),TL,FA,DIAPHRAGM,LAM,IUD,IMPLANON(IMP),INJECTABLE (INJ),OC,ECP"
+HEIGHT (CM),Height (cm),Numeric,,5090,,,,
+HIV DISCLOSURE TO ANYONE,HIV status disclosed to partner,coded,,159423,,"1065, 1066, 1067, 1175","Yes,No,Unkown,N/A","Yes,No,Unkown,NOT APPLICABLE"
+PARTNER TESTED FOR HIV,Partner HIV tested,coded,,161557,,"1065, 1066, 1067, 1175","Yes,No,Unkown,N/A","Yes,No,Unkown,NOT APPLICABLE"
+SCREENED FOR STI,Patient tested for sexually transmitted illness in current visit,coded,,161558,,"1065, 1066, 1067, 1175","Yes,No,Unkown,N/A","Yes,No,Unkown,NOT APPLICABLE"
+RETURN VISIT DATE,RETURN VISIT DATE,Date,,5096,,,,
+TUBERCULOSIS ASSESSMENT,Tuberculosis disease status,coded,,1659,,"1660, 142177, 1662, 160737","No TB Signs,Presumed TB,TB Confirmed,TB Screening Not Done","NO,TUBERCULOSIS SUSPECT,ALREADY ON TUBERCULOSIS TREATMENT,NOT ASSESSED"
+WEIGHT (KG),Weight (kg),Numeric,,5089,,,,
+REFERRALS ORDERED,REFERRALS ORDERED,coded,,,,,,
+REASON FOR NOT BEING ON FAMILY PLANNING,Reason not on family planning,coded,,160575,,"160572, 160573, 5622","Thinks can't get pregnant, Not sexually active now, Other","THINKS CAN'T GET PREGNANT (UP),NOT SEXUALLY ACTIVE NOW (NSEX),WANTED TO BECOME PREGNANT"
+PERSON THAT CAME TO THE FACILITY,Person attending facility,coded,,161643,,"978, 161642, 5622","Self (SF),Treatment supporter (TS),Other (give name)","SELF,BUDDY"
+ANC/PNC Profile,,coded,,159423,,"1065, 1066","Yes, No","Yes, No"
+STI Partner Notification,,coded,,164935,,"1065, 1066","Yes, No","Yes, No"
+Cervical Cancer Screening During Visit,,coded,,164934,,"1065, 1066, 1067, 1175","Yes,No,Unkown,N/A","Yes,No,Unkown,NOT APPLICABLE"
+EXPECTED DELIVERY DATE,Estimated date of confinement,Date,,5596,,,,
+LAST MONTHLY PERIOD DATE,Date of last menstrual period,Date,,1427,,,,
+Nutrition Status,,coded,,163300,,"1115, 163302, 163303, 114413","Normal,Severe acute malnutrition,Moderate acute malnutrition,Overweight/Obese","NORMAL,Severe Acute Malnutrition,Moderate acute malnutrition,OVERWEIGHT"
+SCHEDULED,,Boolean,,1246,,"1065, 1066","Yes, No","Yes, No"
+SYSTOLIC BLOOD PRESSURE,,Numeric,,5085,,,,
+DIASTOLIC BLOOD PRESSURE,,Numeric,,5086,,,,
+Population Type,,coded,,164930,,"164928, 164929","General Population,Key Population","Gen Pop,Key Population"
+RISK GROUP,HIV risk factor,coded,,160581,,"105,  160578, 160579","People who inject drugs, Men who have sex with men, Female sex worker","INTRAVENOUS DRUG USE,Male who has sex with men,Female sex worker"
+POSITIVE HEALTH DIGNITY AND PREVENTION SERVICES,,coded,,112603,,"1065, 1066, 1067, 1175","Yes,No,Unkown,N/A","Yes,No,Unkown,NOT APPLICABLE"
